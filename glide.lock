@@ -1,0 +1,20 @@
+hash: ff178ef26546a34251b65972a52a68fb7aba59410861d2706931ac3b7a488aca
+updated: 2017-05-20T14:30:13.868650102+08:00
+imports:
+- name: github.com/armon/go-radix
+  version: 4239b77079c7b5d1243b7b4736304ce8ddb6f0f2
+- name: github.com/bgentry/speakeasy
+  version: 4aabc24848ce5fd31929f7d1e4ea74d3709c14cd
+- name: github.com/denverdino/aliyungo
+  version: 86861c14413b78c1e5bee83490f0fa84595e8acb
+  subpackages:
+  - ecs
+- name: github.com/mattn/go-isatty
+  version: fc9e8d8ef48496124e79ae0df75490096eccf6fe
+- name: github.com/mitchellh/cli
+  version: ee8578a9c12a5bb9d55303b9665cc448772c81b8
+- name: golang.org/x/sys
+  version: a2e06a18b0d52d8cb2010e04b372a1965d8e3439
+  subpackages:
+  - unix
+testImports: []

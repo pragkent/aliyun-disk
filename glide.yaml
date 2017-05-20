@@ -1,0 +1,6 @@
+package: github.com/pragkent/aliyun-disk
+import:
+- package: github.com/mitchellh/cli
+- package: github.com/denverdino/aliyungo
+  subpackages:
+  - ecs
