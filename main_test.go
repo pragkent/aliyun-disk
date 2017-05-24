@@ -1,37 +1,40 @@
 package main
 
 import (
-	"reflect"
+	"os"
 	"testing"
 )
 
-func TestFixArgs(t *testing.T) {
+func TestGetEnvVars(t *testing.T) {
 	tests := []struct {
-		args []string
-		want []string
+		accessKey string
+		secretKey string
+		region    string
 	}{
-		{
-			[]string{"program", "a", "b", "-c"},
-			[]string{"a", "b", "-c"},
-		},
-		{
-			[]string{"program", "a", "-v"},
-			[]string{"version", "a", "-v"},
-		},
-		{
-			[]string{"program", "a", "-version"},
-			[]string{"version", "a", "-version"},
-		},
-		{
-			[]string{"program", "a", "--version"},
-			[]string{"version", "a", "--version"},
-		},
+		{"", "", ""},
+		{"a", "b", "c"},
 	}
 
-	for _, c := range tests {
-		got := fixArgs(c.args)
-		if !reflect.DeepEqual(got, c.want) {
-			t.Errorf("fixArgs(%v) = %v; want %v", c.args, got, c.want)
+	for _, tt := range tests {
+		os.Setenv("ALIYUN_ACCESS_KEY", tt.accessKey)
+		os.Setenv("ALIYUN_SECRET_KEY", tt.secretKey)
+		os.Setenv("ALIYUN_REGION", tt.region)
+
+		accessKey, secretKey, region := getEnvVars()
+		if accessKey != tt.accessKey {
+			t.Errorf("accessKey error. got: %s want: %s", accessKey, tt.accessKey)
 		}
+
+		if secretKey != tt.secretKey {
+			t.Errorf("secretKey error. got: %s want: %s", secretKey, tt.secretKey)
+		}
+
+		if region != tt.region {
+			t.Errorf("region error. got: %s want: %s", region, tt.region)
+		}
+
+		os.Unsetenv("ALIYUN_ACCESS_KEY")
+		os.Unsetenv("ALIYUN_SECRET_KEY")
+		os.Unsetenv("ALIYUN_REGION")
 	}
 }

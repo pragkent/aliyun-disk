@@ -6,8 +6,17 @@ default: test vet
 bin:
 	./scripts/build
 
+package: bin
+	./scripts/package
+
 test: fmtcheck
 	go test $(PACKAGES)
+
+race: fmtcheck
+	go test -race $(PACKAGES)
+
+cover: fmtcheck
+	go test -cover $(PACKAGES)
 
 vet:
 	@echo "go vet ."
@@ -24,4 +33,7 @@ fmt:
 fmtcheck:
 	./scripts/gofmtcheck
 
-.PHONY: bin test vet fmt fmtcheck
+tools:
+	go get github.com/mitchellh/gox
+
+.PHONY: bin package test race cover vet fmt fmtcheck tools

@@ -1,10 +1,9 @@
 package command
 
 import (
-	"encoding/json"
 	"strings"
 
-	"github.com/pragkent/aliyun-disk/pkg/volume/flexvolume"
+	"github.com/mitchellh/cli"
 )
 
 type InitCommand struct {
@@ -12,27 +11,26 @@ type InitCommand struct {
 }
 
 func (c *InitCommand) Run(args []string) int {
-	status := &flexvolume.DriverStatus{
-		Status: flexvolume.StatusSuccess,
+	fs := c.Meta.FlagSet("init")
+	if err := fs.Parse(args); err != nil {
+		return cli.RunResultHelp
 	}
 
-	b, err := json.Marshal(status)
-	if err != nil {
-		c.Meta.Ui.Error(err.Error())
-		return 1
-	}
+	status := c.Meta.Driver.Init()
+	c.Meta.Ui.Output(jsonify(status))
 
-	c.Meta.Ui.Output(string(b))
 	return 0
 }
 
 func (c *InitCommand) Synopsis() string {
-	return "Initialize driver"
+	return "Initialize aliyun disk driver"
 }
 
 func (c *InitCommand) Help() string {
 	helpText := `
+Usage: aliyun-disk init
 
+Initialize aliyun disk flexvolume driver
 `
 	return strings.TrimSpace(helpText)
 }

@@ -5,10 +5,12 @@ import (
 
 	"github.com/mitchellh/cli"
 	"github.com/pragkent/aliyun-disk/command"
+	_ "github.com/pragkent/aliyun-disk/logs"
+	"github.com/pragkent/aliyun-disk/volume"
 )
 
 func main() {
-	args := fixArgs(os.Args)
+	args := os.Args[1:]
 	meta := newMeta()
 
 	cli := &cli.CLI{
@@ -27,30 +29,24 @@ func main() {
 	os.Exit(exitStatus)
 }
 
-func fixArgs(origin []string) []string {
-	args := origin[1:]
-
-	for _, arg := range args {
-		if arg == "-v" || arg == "-version" || arg == "--version" {
-			newArgs := make([]string, len(args)+1)
-			newArgs[0] = "version"
-			copy(newArgs[1:], args)
-			args = newArgs
-			break
-		}
+func newMeta() *command.Meta {
+	ui := &cli.BasicUi{
+		Writer:      os.Stdout,
+		ErrorWriter: os.Stderr,
+		Reader:      os.Stdin,
 	}
 
-	return args
+	driver := volume.NewDriver(getEnvVars())
+
+	return &command.Meta{
+		Ui:     ui,
+		Driver: driver,
+	}
 }
 
-func newMeta() *command.Meta {
-	return &command.Meta{
-		Ui: &cli.BasicUi{
-			Writer:      os.Stdout,
-			ErrorWriter: os.Stderr,
-			Reader:      os.Stdin,
-		},
-		AccessKey: os.Getenv("ALIYUN_ACCESS_KEY"),
-		SecretKey: os.Getenv("ALIYUN_SECRET_KEY"),
-	}
+func getEnvVars() (accessKey, secretKey, region string) {
+	accessKey = os.Getenv("ALIYUN_ACCESS_KEY")
+	secretKey = os.Getenv("ALIYUN_SECRET_KEY")
+	region = os.Getenv("ALIYUN_REGION")
+	return accessKey, secretKey, region
 }

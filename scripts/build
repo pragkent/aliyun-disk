@@ -11,7 +11,9 @@ cd "$DIR"
 
 # Get the git commit
 GIT_COMMIT=$(git rev-parse --short HEAD)
-GIT_DIRTY=$(test -n "`git status --porcelain`" && echo "+dirty" || true)
+GIT_DIRTY=$(test -n "`git status --porcelain`" && echo "+DIRTY" || true)
+GOX_OS="linux darwin"
+GOX_ARCH="amd64"
 
 echo "==> Removing old files..."
 rm -rf bin
@@ -22,8 +24,14 @@ mkdir -p bin/
 
 LD_FLAGS="-X main.GitCommit=${GIT_COMMIT}${GIT_DIRTY} $LD_FLAGS"
 
-go build -ldflags "$LD_FLAGS" -o "bin/aliyun-disk"
+gox -os="$GOX_OS" -arch="$GOX_ARCH" -ldflags "$LD_FLAGS" -output "dist/{{.OS}}_{{.Arch}}/aliyun-disk"
 
+DEV_PLATFORM="./dist/$(go env GOOS)_$(go env GOARCH)"
+if [[ -d "${DEV_PLATFORM}" ]]; then
+  for F in $(find ${DEV_PLATFORM} -mindepth 1 -maxdepth 1 -type f); do
+    cp ${F} bin/
+  done
+fi
 
 echo "==> Results:"
 ls bin/
