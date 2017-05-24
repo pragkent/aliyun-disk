@@ -1,4 +1,4 @@
 *.test
 bin/
 dist/
-terraform/
+terraform.tfstate*
