@@ -10,7 +10,7 @@ import (
 	"github.com/pragkent/aliyun-disk/volume"
 )
 
-func TestUnmountCommand_Run_Args_Num_Error(t *testing.T) {
+func TestUnmountCommand_Run_ArgsError(t *testing.T) {
 	ui := &cli.BasicUi{}
 
 	meta := &Meta{

@@ -25,7 +25,6 @@ func main() {
 	if err != nil {
 		meta.Ui.Error(err.Error())
 	}
-
 	os.Exit(exitStatus)
 }
 

@@ -5,6 +5,17 @@ import (
 	"testing"
 )
 
+func TestNewMeta(t *testing.T) {
+	meta := newMeta()
+	if meta.Ui == nil {
+		t.Errorf("NewMeta returned nil Ui")
+	}
+
+	if meta.Driver == nil {
+		t.Errorf("NewMeta returned nil Driver")
+	}
+}
+
 func TestGetEnvVars(t *testing.T) {
 	tests := []struct {
 		accessKey string

@@ -79,6 +79,22 @@ func TestAttachCommand_Run(t *testing.T) {
 				DevicePath: "/dev/vdb",
 			},
 		},
+		{
+			[]string{`{"diskId": "12345"}`, "node1"},
+			0,
+			volume.DriverStatus{
+				Status:     volume.StatusSuccess,
+				DevicePath: "/dev/xyz",
+			},
+		},
+		{
+			[]string{`{"diskId": "12345"}`, "node2"},
+			0,
+			volume.DriverStatus{
+				Status:  volume.StatusFailure,
+				Message: "unknown node",
+			},
+		},
 	}
 
 	for _, tt := range tests {
