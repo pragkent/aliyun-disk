@@ -3,7 +3,7 @@ GOFMT_FILES?=$$(find . -name '*.go' | grep -v vendor)
 
 default: test vet
 
-bin:
+bin: tools
 	./scripts/build
 
 package: bin
@@ -12,10 +12,10 @@ package: bin
 test: fmtcheck
 	go test $(PACKAGES)
 
-race: fmtcheck
+testrace: fmtcheck
 	go test -race $(PACKAGES)
 
-cover: fmtcheck
+testcover: fmtcheck
 	go test -cover $(PACKAGES)
 
 vet:
@@ -36,4 +36,4 @@ fmtcheck:
 tools:
 	go get github.com/mitchellh/gox
 
-.PHONY: bin package test race cover vet fmt fmtcheck tools
+.PHONY: bin package test testrace testcover vet fmt fmtcheck tools

@@ -1,6 +1,7 @@
 # aliyun-disk
 
-## Description
+[![Build Status](https://travis-ci.org/pragkent/aliyun-disk.svg?branch=master)](https://travis-ci.org/pragkent/aliyun-disk)
+
 阿里云盘Kubernetes FlexVolume驱动
 
 ## Usage
