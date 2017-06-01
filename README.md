@@ -64,7 +64,7 @@ spec:
 
 
 ### Dynamic PersistentVolume and StorageClass
-Deploy [aliyundisk-provisioner](https://github.com/pragkent/aliyundisk-provisioner) on your cluster first.
+Deploy [aliyundisk-provisioner](https://github.com/pragkent/aliyun-disk-provisioner) on your cluster first.
 
 ```yaml
 kind: StorageClass
@@ -73,7 +73,7 @@ metadata:
   name: ssd
 provisioner: pragkent.me/aliyun-disk
 parameters:
-  type: cloud_ssd
+  category: cloud_ssd
 
 ---
 kind: PersistentVolumeClaim
