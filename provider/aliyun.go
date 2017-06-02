@@ -20,29 +20,42 @@ func New(accessKey, secretKey, region string) Provider {
 }
 
 func (p *Aliyun) GetInstanceByHostname(hostname string) (*Instance, error) {
-	tags := map[string]string{
-		"hostname": hostname,
+	pg := &common.Pagination{
+		PageNumber: 0,
+		PageSize:   50,
 	}
 
-	args := &ecs.DescribeInstancesArgs{
-		RegionId: p.region,
-		Tag:      tags,
+	var matched []ecs.InstanceAttributesType
+
+	for pg != nil {
+		args := &ecs.DescribeInstancesArgs{
+			RegionId:   p.region,
+			Pagination: *pg,
+		}
+
+		instances, pgr, err := p.c.DescribeInstances(args)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, i := range instances {
+			if i.HostName == hostname {
+				matched = append(matched, i)
+			}
+		}
+
+		pg = pgr.NextPage()
 	}
 
-	ins, _, err := p.c.DescribeInstances(args)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(ins) == 0 {
+	if len(matched) == 0 {
 		return nil, errInstanceNotExist
 	}
 
-	if len(ins) > 1 {
+	if len(matched) > 1 {
 		return nil, errHostnameDuplicated
 	}
 
-	instance := Instance(ins[0])
+	instance := Instance(matched[0])
 	return &instance, nil
 }
 

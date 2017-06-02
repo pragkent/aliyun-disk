@@ -58,10 +58,6 @@ resource "alicloud_instance" "test" {
   internet_charge_type = "PayByTraffic"
   allocate_public_ip = true
   internet_max_bandwidth_out = 10
-
-  tags {
-    hostname = "aliyun-disk-test"
-  }
 }
 
 resource "alicloud_disk" "disk" {
