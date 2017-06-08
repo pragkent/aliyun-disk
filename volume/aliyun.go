@@ -133,9 +133,9 @@ func (d *AliyunDriver) Detach(device string, node string) *DriverStatus {
 		return NewDriverError(fmt.Errorf("could not find instance %q: %v", node, err))
 	}
 
-	disk, err := d.aliyun.GetDiskByDevice(instance.InstanceId, device)
+	disk, err := d.aliyun.GetDiskById(device)
 	if err != nil {
-		log.Printf("GetDiskByDevice failed. %v. InstanceId: %s Device: %s", err,
+		log.Printf("GetDiskById failed. %v. InstanceId: %s Device: %s", err,
 			instance.InstanceId, device)
 		return NewDriverError(fmt.Errorf("could not find disk %q: %v", device, err))
 	}

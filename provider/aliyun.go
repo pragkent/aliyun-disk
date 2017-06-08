@@ -1,8 +1,6 @@
 package provider
 
 import (
-	"fmt"
-
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
 )
@@ -76,37 +74,6 @@ func (p *Aliyun) GetDiskById(diskId string) (*Disk, error) {
 
 	disk := Disk(ds[0])
 	return &disk, nil
-}
-
-func (p *Aliyun) GetDiskByDevice(instanceId string, device string) (*Disk, error) {
-	pg := &common.Pagination{
-		PageNumber: 0,
-		PageSize:   50,
-	}
-
-	for pg != nil {
-		args := &ecs.DescribeDisksArgs{
-			RegionId:   common.Region(p.region),
-			InstanceId: instanceId,
-			Pagination: *pg,
-		}
-
-		disks, pgr, err := p.c.DescribeDisks(args)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, d := range disks {
-			disk := Disk(d)
-			if disk.LocalDevice() == device {
-				return &disk, nil
-			}
-		}
-
-		pg = pgr.NextPage()
-	}
-
-	return nil, fmt.Errorf("Device %q is not found on instance %q", device, instanceId)
 }
 
 func (p *Aliyun) AttachDisk(instanceId string, diskId string) error {
