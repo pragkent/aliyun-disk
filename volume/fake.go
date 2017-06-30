@@ -18,13 +18,14 @@ func (d *FakeDriver) Init() *DriverStatus {
 }
 
 func (d *FakeDriver) GetVolumeName(options Options) *DriverStatus {
-	return &DriverStatus{
-		Status:     StatusSuccess,
-		VolumeName: options.DiskId(),
-	}
+	return NewDriverNotSupported(errCommandNotSupported)
 }
 
 func (d *FakeDriver) Attach(options Options, node string) *DriverStatus {
+	if err := options.Check(); err != nil {
+		return NewDriverError(err)
+	}
+
 	if dp, ok := nodeDeviceMap[node]; ok {
 		return &DriverStatus{
 			Status:     StatusSuccess,
@@ -45,6 +46,10 @@ func (d *FakeDriver) Detach(device string, node string) *DriverStatus {
 }
 
 func (d *FakeDriver) WaitForAttach(device string, options Options) *DriverStatus {
+	if err := options.Check(); err != nil {
+		return NewDriverError(err)
+	}
+
 	for _, d := range nodeDeviceMap {
 		if d == device {
 			return &DriverStatus{
@@ -61,6 +66,10 @@ func (d *FakeDriver) WaitForAttach(device string, options Options) *DriverStatus
 }
 
 func (d *FakeDriver) IsAttached(options Options, node string) *DriverStatus {
+	if err := options.Check(); err != nil {
+		return NewDriverError(err)
+	}
+
 	if _, ok := nodeDeviceMap[node]; ok {
 		return &DriverStatus{
 			Status:   StatusSuccess,
@@ -75,6 +84,10 @@ func (d *FakeDriver) IsAttached(options Options, node string) *DriverStatus {
 }
 
 func (d *FakeDriver) MountDevice(dir string, device string, options Options) *DriverStatus {
+	if err := options.Check(); err != nil {
+		return NewDriverError(err)
+	}
+
 	return &DriverStatus{
 		Status: StatusSuccess,
 	}

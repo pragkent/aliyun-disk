@@ -6,10 +6,12 @@ Aliyun Disk Kubernetes FlexVolume Driver
 
 ## Usage
 1. Copy aliyun-disk binary to kubelet volume plugin directory. (`/usr/libexec/kubernetes/kubelet-plugins/volume/exec/pragkent.me~aliyun-disk`)
-2. Add three env variables to kube-controller-manager:
+2. Add four env variables to kube-controller-manager:
   - ALIYUN_ACCESS_KEY
   - ALIYUN_ACCESS_SECRET
   - ALIYUN_REGION
+  - ALIYUN_CLUSTER
+
 
 ## Install
 

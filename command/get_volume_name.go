@@ -30,7 +30,7 @@ func (c *GetVolumeNameCommand) Run(args []string) int {
 	status := c.Meta.Driver.GetVolumeName(options)
 	c.Meta.Ui.Output(jsonify(status))
 
-	return 0
+	return 1
 }
 
 func (c *GetVolumeNameCommand) Synopsis() string {

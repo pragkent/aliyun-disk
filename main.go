@@ -35,17 +35,18 @@ func newMeta() *command.Meta {
 		Reader:      os.Stdin,
 	}
 
-	driver := volume.NewDriver(getEnvVars())
-
+	driver := volume.NewDriver(getDriverConfig())
 	return &command.Meta{
 		Ui:     ui,
 		Driver: driver,
 	}
 }
 
-func getEnvVars() (accessKey, secretKey, region string) {
-	accessKey = os.Getenv("ALIYUN_ACCESS_KEY")
-	secretKey = os.Getenv("ALIYUN_SECRET_KEY")
-	region = os.Getenv("ALIYUN_REGION")
-	return accessKey, secretKey, region
+func getDriverConfig() *volume.DriverConfig {
+	return &volume.DriverConfig{
+		Region:    os.Getenv("ALIYUN_REGION"),
+		AccessKey: os.Getenv("ALIYUN_ACCESS_KEY"),
+		SecretKey: os.Getenv("ALIYUN_SECRET_KEY"),
+		Cluster:   os.Getenv("ALIYUN_CLUSTER"),
+	}
 }

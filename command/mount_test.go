@@ -65,8 +65,8 @@ func TestMountCommand_Run(t *testing.T) {
 			[]string{"/mnt/xx", `{"abc": "efg"}`},
 			1,
 			volume.DriverStatus{
-				Status:  volume.StatusFailure,
-				Message: "option diskId is required",
+				Status:  volume.StatusNotSupported,
+				Message: "command not supported",
 			},
 		},
 		{

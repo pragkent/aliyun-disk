@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"k8s.io/kubernetes/pkg/util/exec"
 	"k8s.io/kubernetes/pkg/util/mount"
@@ -12,16 +13,18 @@ import (
 )
 
 type AliyunDriver struct {
+	c      *DriverConfig
 	aliyun provider.Provider
 }
 
-func NewDriver(accessKey string, secretKey string, region string) Driver {
-	if accessKey == "" || secretKey == "" || region == "" {
-		return &AliyunDriver{}
+func NewDriver(c *DriverConfig) Driver {
+	if !c.HasAliyunCredentials() {
+		return &AliyunDriver{c: c}
 	}
 
 	return &AliyunDriver{
-		aliyun: provider.New(accessKey, secretKey, region),
+		c:      c,
+		aliyun: provider.New(c.AccessKey, c.SecretKey, c.Region),
 	}
 }
 
@@ -38,16 +41,15 @@ func (d *AliyunDriver) Init() *DriverStatus {
 
 func (d *AliyunDriver) GetVolumeName(options Options) *DriverStatus {
 	log.Printf("GetVolumeName invoked. Options: %v", options)
-
-	diskId := options.DiskId()
-	return &DriverStatus{
-		Status:     StatusSuccess,
-		VolumeName: diskId,
-	}
+	return NewDriverNotSupported(errCommandNotSupported)
 }
 
 func (d *AliyunDriver) Attach(options Options, node string) *DriverStatus {
 	log.Printf("Attach invoked. Options: %v Node: %s", options, node)
+
+	if err := options.Check(); err != nil {
+		return NewDriverError(err)
+	}
 
 	if !d.isAliyunAPIAvailable() {
 		return NewDriverError(errAliyunAPIUnavailable)
@@ -64,6 +66,13 @@ func (d *AliyunDriver) Attach(options Options, node string) *DriverStatus {
 	if err != nil {
 		log.Printf("GetDiskById failed. %v. DiskId: %s", err, diskId)
 		return NewDriverError(fmt.Errorf("could not find disk %q: %v", diskId, err))
+	}
+
+	pvOrVolumeName := options[optionPVorVolumeName].(string)
+	if pvOrVolumeName != "" {
+		if err := d.AddDiskTag(disk.DiskId, pvOrVolumeName); err != nil {
+			return NewDriverError(err)
+		}
 	}
 
 	if instance.IsDiskAttached(disk) {
@@ -120,6 +129,27 @@ func (d *AliyunDriver) attachDisk(instance *provider.Instance, disk *provider.Di
 	return d.aliyun.WaitForDisk(disk.DiskId, provider.DiskStatusInUse)
 }
 
+func (d *AliyunDriver) AddDiskTag(diskId string, volumeName string) error {
+	args := &provider.AddTagsArgs{
+		ResourceId:   diskId,
+		ResourceType: provider.TagResourceDisk,
+		Tag:          d.getDiskTags(volumeName),
+	}
+
+	if err := d.aliyun.AddTags(args); err != nil {
+		return fmt.Errorf("Unable to add tag for disk %s: %v", diskId, err)
+	}
+
+	return nil
+}
+
+func (d *AliyunDriver) getDiskTags(volumeName string) map[string]string {
+	return map[string]string{
+		"cluster": d.c.Cluster,
+		"volume":  volumeName,
+	}
+}
+
 func (d *AliyunDriver) Detach(device string, node string) *DriverStatus {
 	log.Printf("Detach invoked. Device: %s Node: %s", device, node)
 
@@ -133,11 +163,9 @@ func (d *AliyunDriver) Detach(device string, node string) *DriverStatus {
 		return NewDriverError(fmt.Errorf("could not find instance %q: %v", node, err))
 	}
 
-	disk, err := d.aliyun.GetDiskById(device)
+	disk, err := d.getDiskByDevice(device)
 	if err != nil {
-		log.Printf("GetDiskById failed. %v. InstanceId: %s Device: %s", err,
-			instance.InstanceId, device)
-		return NewDriverError(fmt.Errorf("could not find disk %q: %v", device, err))
+		return NewDriverError(err)
 	}
 
 	if disk.IsDetaching() || disk.IsAvailable() {
@@ -165,8 +193,31 @@ func (d *AliyunDriver) Detach(device string, node string) *DriverStatus {
 	}
 }
 
+func (d *AliyunDriver) getDiskByDevice(device string) (disk *provider.Disk, err error) {
+	if strings.HasPrefix(device, "d-") {
+		disk, err = d.aliyun.GetDiskById(device)
+		if err != nil {
+			log.Printf("GetDiskById failed. %v. DiskId: %s", err, device)
+			return nil, fmt.Errorf("could not find disk %q: %v", device, err)
+		}
+	} else {
+		tags := d.getDiskTags(device)
+		disk, err = d.aliyun.GetDiskByTags(tags)
+		if err != nil {
+			log.Printf("GetDiskByTags failed. %v. tags: %s", err, tags)
+			return nil, fmt.Errorf("could not find disk %q: %v", device, err)
+		}
+	}
+
+	return disk, nil
+}
+
 func (d *AliyunDriver) WaitForAttach(device string, options Options) *DriverStatus {
 	log.Printf("WaitForAttach invoked. Device: %s Options: %v", device, options)
+
+	if err := options.Check(); err != nil {
+		return NewDriverError(err)
+	}
 
 	if !d.isAliyunAPIAvailable() {
 		return NewDriverNotSupported(errAliyunAPIUnavailable)
@@ -197,6 +248,10 @@ func (d *AliyunDriver) WaitForAttach(device string, options Options) *DriverStat
 func (d *AliyunDriver) IsAttached(options Options, node string) *DriverStatus {
 	log.Printf("IsAttached invoked. Options: %v Node: %s", options, node)
 
+	if err := options.Check(); err != nil {
+		return NewDriverError(err)
+	}
+
 	if !d.isAliyunAPIAvailable() {
 		return NewDriverNotSupported(errAliyunAPIUnavailable)
 	}
@@ -220,6 +275,10 @@ func (d *AliyunDriver) IsAttached(options Options, node string) *DriverStatus {
 
 func (d *AliyunDriver) MountDevice(dir string, device string, options Options) *DriverStatus {
 	log.Printf("MountDevice invoked. Dir: %s Device: %s Options: %v", dir, device, options)
+
+	if err := options.Check(); err != nil {
+		return NewDriverError(err)
+	}
 
 	fsType, _ := options[optionFSType].(string)
 	rw, _ := options[optionReadWrite].(string)

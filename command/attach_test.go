@@ -65,7 +65,7 @@ func TestAttachCommand_Run(t *testing.T) {
 		},
 		{
 			[]string{`{"abc": "efg"}`, "node0"},
-			1,
+			0,
 			volume.DriverStatus{
 				Status:  volume.StatusFailure,
 				Message: "option diskId is required",

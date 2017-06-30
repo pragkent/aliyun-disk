@@ -67,16 +67,16 @@ func TestGetVolumeNameCommand_Run(t *testing.T) {
 			[]string{`{"abc": "efg"}`},
 			1,
 			volume.DriverStatus{
-				Status:  volume.StatusFailure,
-				Message: "option diskId is required",
+				Status:  volume.StatusNotSupported,
+				Message: "command not supported",
 			},
 		},
 		{
 			[]string{`{"diskId": "xyz"}`},
-			0,
+			1,
 			volume.DriverStatus{
-				Status:     volume.StatusSuccess,
-				VolumeName: "xyz",
+				Status:  volume.StatusNotSupported,
+				Message: "command not supported",
 			},
 		},
 	}

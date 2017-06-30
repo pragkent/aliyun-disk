@@ -46,11 +46,11 @@ func (p *Aliyun) GetInstanceByHostname(hostname string) (*Instance, error) {
 	}
 
 	if len(matched) == 0 {
-		return nil, errInstanceNotExist
+		return nil, ErrInstanceNotExist
 	}
 
 	if len(matched) > 1 {
-		return nil, errHostnameDuplicated
+		return nil, ErrHostnameDuplicated
 	}
 
 	instance := Instance(matched[0])
@@ -69,7 +69,7 @@ func (p *Aliyun) GetDiskById(diskId string) (*Disk, error) {
 	}
 
 	if len(ds) == 0 {
-		return nil, errDiskNotExist
+		return nil, ErrDiskNotExist
 	}
 
 	disk := Disk(ds[0])
@@ -91,4 +91,38 @@ func (p *Aliyun) DetachDisk(instanceId string, diskId string) error {
 
 func (p *Aliyun) WaitForDisk(diskId string, status DiskStatus) error {
 	return p.c.WaitForDisk(p.region, diskId, ecs.DiskStatus(status), 0)
+}
+
+func (p *Aliyun) AddTags(args *AddTagsArgs) error {
+	ecsArgs := &ecs.AddTagsArgs{
+		RegionId:     p.region,
+		ResourceId:   args.ResourceId,
+		ResourceType: ecs.TagResourceType(args.ResourceType),
+		Tag:          args.Tag,
+	}
+
+	return p.c.AddTags(ecsArgs)
+}
+
+func (p *Aliyun) GetDiskByTags(tags map[string]string) (*Disk, error) {
+	args := &ecs.DescribeDisksArgs{
+		RegionId: p.region,
+		Tag:      tags,
+	}
+
+	ds, _, err := p.c.DescribeDisks(args)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ds) == 0 {
+		return nil, ErrDiskNotExist
+	}
+
+	if len(ds) > 1 {
+		return nil, ErrDiskTagDuplicated
+	}
+
+	disk := Disk(ds[0])
+	return &disk, nil
 }

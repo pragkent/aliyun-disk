@@ -7,11 +7,12 @@ import (
 
 const (
 	// Option keys
-	optionFSType    = "kubernetes.io/fsType"
-	optionReadWrite = "kubernetes.io/readwrite"
-	optionKeySecret = "kubernetes.io/secret"
-	optionFSGroup   = "kubernetes.io/fsGroup"
-	optionMountsDir = "kubernetes.io/mountsDir"
+	optionFSType         = "kubernetes.io/fsType"
+	optionReadWrite      = "kubernetes.io/readwrite"
+	optionKeySecret      = "kubernetes.io/secret"
+	optionFSGroup        = "kubernetes.io/fsGroup"
+	optionMountsDir      = "kubernetes.io/mountsDir"
+	optionPVorVolumeName = "kubernetes.io/pvOrVolumeName"
 
 	optionKeyPodName      = "kubernetes.io/pod.name"
 	optionKeyPodNamespace = "kubernetes.io/pod.namespace"
@@ -33,14 +34,10 @@ func ParseOptions(s string) (Options, error) {
 		return nil, errInvalidVolumeOptions
 	}
 
-	if err := o.check(); err != nil {
-		return nil, err
-	}
-
 	return o, nil
 }
 
-func (o Options) check() error {
+func (o Options) Check() error {
 	for _, k := range requiredOptions {
 		if _, ok := o[k]; !ok {
 			return fmt.Errorf("option %s is required", k)

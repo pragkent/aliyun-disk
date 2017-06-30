@@ -3,7 +3,8 @@ package provider
 import "errors"
 
 var (
-	errInstanceNotExist   = errors.New("instance does not exist")
-	errHostnameDuplicated = errors.New("instance hostname duplicated")
-	errDiskNotExist       = errors.New("disk does not exist")
+	ErrInstanceNotExist   = errors.New("instance does not exist")
+	ErrHostnameDuplicated = errors.New("instance hostname duplicated")
+	ErrDiskNotExist       = errors.New("disk does not exist")
+	ErrDiskTagDuplicated  = errors.New("disk tags duplicated")
 )
