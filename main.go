@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"os"
 
 	"github.com/mitchellh/cli"
@@ -8,6 +10,8 @@ import (
 	_ "github.com/pragkent/aliyun-disk/logs"
 	"github.com/pragkent/aliyun-disk/volume"
 )
+
+const configPath = "/etc/kubernetes/cloud.json"
 
 func main() {
 	args := os.Args[1:]
@@ -43,10 +47,29 @@ func newMeta() *command.Meta {
 }
 
 func getDriverConfig() *volume.DriverConfig {
+	cfg := loadDriverConfig()
+	if cfg != nil {
+		return cfg
+	}
+
 	return &volume.DriverConfig{
 		Region:    os.Getenv("ALIYUN_REGION"),
 		AccessKey: os.Getenv("ALIYUN_ACCESS_KEY"),
 		SecretKey: os.Getenv("ALIYUN_SECRET_KEY"),
 		Cluster:   os.Getenv("ALIYUN_CLUSTER"),
 	}
+}
+
+func loadDriverConfig() *volume.DriverConfig {
+	raw, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil
+	}
+
+	var cfg volume.DriverConfig
+	if err = json.Unmarshal(raw, &cfg); err != nil {
+		return nil
+	}
+
+	return &cfg
 }
