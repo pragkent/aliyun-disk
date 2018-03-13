@@ -34,8 +34,13 @@ func (d *AliyunDriver) isAliyunAPIAvailable() bool {
 
 func (d *AliyunDriver) Init() *DriverStatus {
 	log.Printf("Init invoked.")
+
+	cap := make(DriverCapabilities)
+	cap[CapabilityAttach] = true
+
 	return &DriverStatus{
-		Status: StatusSuccess,
+		Status:       StatusSuccess,
+		Capabilities: cap,
 	}
 }
 

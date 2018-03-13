@@ -9,6 +9,12 @@ const (
 	StatusNotSupported = "Not supported"
 )
 
+type DriverCapabilities map[string]bool
+
+const (
+	CapabilityAttach = "attach"
+)
+
 // DriverStatus represents the return value of the driver callout.
 type DriverStatus struct {
 	// Status of the callout. One of "Success", "Failure" or "Not supported".
@@ -22,4 +28,6 @@ type DriverStatus struct {
 	VolumeName string `json:"volumeName,omitempty"`
 	// Represents volume is attached on the node
 	Attached bool `json:"attached,omitempty"`
+	// Driver capabilities
+	Capabilities DriverCapabilities `json:"capabilities,omitempty"`
 }
