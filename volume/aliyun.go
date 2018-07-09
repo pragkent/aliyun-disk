@@ -123,7 +123,7 @@ func (d *AliyunDriver) detachDisk(disk *provider.Disk) error {
 		return fmt.Errorf("Unable to detach disk %s: %v", disk.DiskId, err)
 	}
 
-	return d.aliyun.WaitForDisk(disk.DiskId, provider.DiskStatusAvailable)
+	return d.aliyun.WaitForDisk(disk.DiskId, provider.DiskStatusAvailable, 0)
 }
 
 func (d *AliyunDriver) attachDisk(instance *provider.Instance, disk *provider.Disk) error {
@@ -131,7 +131,7 @@ func (d *AliyunDriver) attachDisk(instance *provider.Instance, disk *provider.Di
 		return fmt.Errorf("Unable to attach disk %s: %v", disk.DiskId, err)
 	}
 
-	return d.aliyun.WaitForDisk(disk.DiskId, provider.DiskStatusInUse)
+	return d.aliyun.WaitForDisk(disk.DiskId, provider.DiskStatusInUse, 0)
 }
 
 func (d *AliyunDriver) AddDiskTag(diskId string, volumeName string) error {
@@ -234,7 +234,7 @@ func (d *AliyunDriver) WaitForAttach(device string, options Options) *DriverStat
 		return NewDriverError(fmt.Errorf("could not find disk %q: %v", diskId, err))
 	}
 
-	if err := d.aliyun.WaitForDisk(disk.DiskId, provider.DiskStatusInUse); err != nil {
+	if err := d.aliyun.WaitForDisk(disk.DiskId, provider.DiskStatusInUse, 0); err != nil {
 		return NewDriverError(err)
 	}
 

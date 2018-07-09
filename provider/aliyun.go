@@ -1,9 +1,15 @@
 package provider
 
 import (
+	"errors"
+	"time"
+
 	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/ecs"
 )
+
+const DefaultTimeout = time.Minute
+const DefaultInterval = time.Second
 
 type Aliyun struct {
 	region common.Region
@@ -89,8 +95,39 @@ func (p *Aliyun) DetachDisk(instanceId string, diskId string) error {
 	return p.c.DetachDisk(instanceId, diskId)
 }
 
-func (p *Aliyun) WaitForDisk(diskId string, status DiskStatus) error {
-	return p.c.WaitForDisk(p.region, diskId, ecs.DiskStatus(status), 0)
+func (p *Aliyun) WaitForDisk(diskId string, status DiskStatus, timeout time.Duration) error {
+	if timeout <= 0 {
+		timeout = DefaultTimeout
+	}
+
+	args := ecs.DescribeDisksArgs{
+		RegionId: p.region,
+		DiskIds:  []string{diskId},
+	}
+
+	for {
+		disks, _, err := p.c.DescribeDisks(&args)
+		if err != nil {
+			return err
+		}
+
+		if disks == nil || len(disks) == 0 {
+			return errors.New("provider: disk not found")
+		}
+
+		if disks[0].Status == ecs.DiskStatus(status) {
+			break
+		}
+
+		timeout -= DefaultInterval
+		if timeout <= 0 {
+			return errors.New("provider: wait for disk timeout")
+		}
+
+		time.Sleep(DefaultInterval)
+	}
+
+	return nil
 }
 
 func (p *Aliyun) AddTags(args *AddTagsArgs) error {
