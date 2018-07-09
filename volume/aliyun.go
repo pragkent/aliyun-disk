@@ -185,7 +185,7 @@ func (d *AliyunDriver) Detach(device string, node string) *DriverStatus {
 		}
 	}
 
-	if err := d.aliyun.DetachDisk(instance.InstanceId, disk.DiskId); err != nil {
+	if err := d.detachDisk(disk); err != nil {
 		log.Printf("DetachDisk failed. %v. InstanceId: %s DiskId: %s", err,
 			instance.InstanceId, disk.DiskId)
 		return NewDriverError(fmt.Errorf("could not detach disk %q: %v", disk.DiskId, err))

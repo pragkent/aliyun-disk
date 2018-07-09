@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/mitchellh/cli"
@@ -10,8 +11,6 @@ import (
 	_ "github.com/pragkent/aliyun-disk/logs"
 	"github.com/pragkent/aliyun-disk/volume"
 )
-
-const configPath = "/etc/kubernetes/cloud.json"
 
 func main() {
 	args := os.Args[1:]
@@ -61,13 +60,16 @@ func getDriverConfig() *volume.DriverConfig {
 }
 
 func loadDriverConfig() *volume.DriverConfig {
-	raw, err := ioutil.ReadFile(configPath)
+	const path = "/etc/kubernetes/cloud/cloud.json"
+	raw, err := ioutil.ReadFile(path)
 	if err != nil {
+		log.Printf("ioutil.ReadFile error: %v", err)
 		return nil
 	}
 
 	var cfg volume.DriverConfig
 	if err = json.Unmarshal(raw, &cfg); err != nil {
+		log.Printf("json.Unmarshal error: %v", err)
 		return nil
 	}
 
