@@ -80,7 +80,7 @@ func (d *AliyunDriver) Attach(options Options, node string) *DriverStatus {
 		}
 	}
 
-	if instance.IsDiskAttached(disk) {
+	if instance.IsDiskAttached(disk) && disk.IsInUse() {
 		log.Printf("Disk already attached. DiskId: %s", diskId)
 		return &DriverStatus{
 			Status:     StatusSuccess,
@@ -173,7 +173,7 @@ func (d *AliyunDriver) Detach(device string, node string) *DriverStatus {
 		return NewDriverError(err)
 	}
 
-	if disk.IsDetaching() || disk.IsAvailable() {
+	if disk.IsAvailable() {
 		return &DriverStatus{
 			Status: StatusSuccess,
 		}
